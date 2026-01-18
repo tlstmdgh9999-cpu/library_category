@@ -8682,26 +8682,41 @@ why? 교과서 사회(어린이만화 61)
         .filter(t => t !== "" && t !== "도서명");
 
     // 2. 카테고리 추출 및 선택 메뉴 생성
-    function initCategory() {
-        const categorySet = new Set();
-        bookTitles.forEach(title => {
-            const match = title.match(/\(([^)]+)\)/); // 괄호 추출
-            if (match) {
-                // 숫자와 공백을 제거하고 순수 카테고리 명만 추출 (예: '경제 1' -> '경제')
-                const catName = match[1].replace(/[0-9\s-]+/g, "");
-                if (catName) categorySet.add(catName);
+ function initCategory() {
+    const categorySet = new Set();
+    
+    bookTitles.forEach(title => {
+        // 괄호() 안의 내용을 찾습니다.
+        const match = title.match(/\(([^)]+)\)/); 
+        if (match) {
+            let catName = match[1];
+            
+            // 정리 로직:
+            // 1. 숫자, 공백, 쉼표, 특수문자를 모두 제거합니다.
+            // 2. '경제 1' -> '경제', '(종교' -> '종교'로 변환됩니다.
+            catName = catName.replace(/[0-9\s,.-]+/g, "").trim();
+            
+            // 한 글자짜리 카테고리(예: A)나 빈 값은 제외하고 싶다면 아래 조건을 유지하세요.
+            if (catName && catName.length >= 2) {
+                categorySet.add(catName);
+            } else if (catName === "A" || catName === "B") { // 꼭 필요한 영문은 포함
+                categorySet.add(catName);
             }
-        });
+        }
+    });
 
-        const filterSelect = document.getElementById('categoryFilter');
-        Array.from(categorySet).sort().forEach(cat => {
-            const option = document.createElement('option');
-            option.value = cat;
-            option.textContent = cat;
-            filterSelect.appendChild(option);
-        });
-    }
-
+    const filterSelect = document.getElementById('categoryFilter');
+    // 기존 옵션(전체 카테고리 제외) 삭제 후 새로 추가
+    filterSelect.innerHTML = '<option value="all">전체 카테고리</option>';
+    
+    // 가나다순으로 정렬하여 추가
+    Array.from(categorySet).sort().forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat;
+        option.textContent = cat;
+        filterSelect.appendChild(option);
+    });
+}
     // 3. 도서 목록 출력
     function displayBooks(list) {
         const container = document.getElementById('resultList');
@@ -8742,4 +8757,5 @@ why? 교과서 사회(어린이만화 61)
 </script>
 
 </body>
+
 </html>
